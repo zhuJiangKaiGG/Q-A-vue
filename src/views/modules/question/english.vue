@@ -13,13 +13,15 @@
   </div>
   <span slot="footer" class="dialog-footer">
     <el-button @click="addDomain()">添加</el-button>
+    <el-button @click="removeDomain()" type="danger">移除</el-button>
     <el-button @click="dialogVisible = false">取 消</el-button>
     <el-button type="primary" @click="submitBatchAddFrom()">确 定</el-button>
   </span>
 </el-dialog>
     <el-form :inline="true" :model="dataForm" @keyup.enter.native="getDataList()">
       <el-form-item>
-        <el-input v-model="dataForm.key" placeholder="参数名" clearable></el-input>
+        <el-date-picker v-model="dateTime" type="date" placeholder="选择日期" value-format="yyyy-MM-dd">
+    </el-date-picker>
       </el-form-item>
       <el-form-item>
         <el-button @click="getDataList()">查询</el-button>
@@ -101,6 +103,7 @@
   export default {
     data () {
       return {
+        dateTime:"",
         dialogVisible:false,
         dataForm: {
           key: ''
@@ -128,10 +131,12 @@
       this.getDataList()
     },
     methods: {
+
+      removeDomain(){
+        this.batchAddForm.pop()
+      },
       submitBatchAddFrom(){
         this.dialogVisible=false
-         console.log("this.batchAddForm")
-        console.log(this.batchAddForm)
         this.$http({
           url: this.$http.adornUrl('/generator/english/batchSave'),
           method: 'post',
@@ -144,6 +149,13 @@
                 duration: 1500,
                 onClose: () => {
                   this.getDataList()
+                  this.batchAddForm=[{
+                  id: 0,
+                  name: '',
+                  chTranslate: '',
+                  createTime: null,
+                  nums: 0
+                  }]
                 }
               })
           }
@@ -163,6 +175,7 @@
       },
       // 获取数据列表
       getDataList () {
+        console.log(this.dateTime)
         this.dataListLoading = true
         
         this.$http({
@@ -171,7 +184,7 @@
           params: this.$http.adornParams({
             'page': this.pageIndex,
             'limit': this.pageSize,
-            'key': this.dataForm.key
+            'dateTime': this.dateTime
           })
         }).then(({data}) => {
           if (data && data.code === 0) {
